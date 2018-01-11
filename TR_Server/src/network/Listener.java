@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.net.SocketException;
 
 /**
- * @author valentin
+ * @author vburger
  *
  */
 

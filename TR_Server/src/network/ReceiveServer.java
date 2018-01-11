@@ -13,12 +13,12 @@ import robotmodel.RobotData;
  *
  */
 
-// For test purposes : echo -e "0\n0\n330" | nc -u -w1 localhost 8888
+// For test purposes : echo -e "0\n0\n330\n0" | nc -u -w1 localhost 8888
 
 public class ReceiveServer {
 	
 	static int rId, rLocation, rSpeed, rRotation = 0;
-	static int deltaTime = 5;
+	static int deltaTime = 3000;
 	static double rTime;
 	
 	static ArrayList<RobotData> requestSequence = new ArrayList<RobotData>();
@@ -47,24 +47,24 @@ public class ReceiveServer {
 					try {
 						rId = Integer.parseInt(values[0]);
 					} catch (NumberFormatException e) {
-						System.out.println("Invalid data 0\n");
+						//System.out.println("Invalid data 0\n");
 					}
 					try {
 						rLocation = Integer.parseInt(values[1]);
 					} catch (NumberFormatException e) {
-						System.out.println("Invalid data 1\n");
+						//System.out.println("Invalid data 1\n");
 					}
 					try {
 						rSpeed = Integer.parseInt(values[2]);
 					} catch (NumberFormatException e) {
-						System.out.println("Invalid data 2\n");
+						//System.out.println("Invalid data 2\n");
 					}
 					try {
 						rRotation = Integer.parseInt(values[3]);
 					} catch (NumberFormatException e) {
-						System.out.println("Invalid data 3\n");
+						//System.out.println("Invalid data 3\n");
 					}
-					
+					//int oldRotation = rRotation;
 					if(rRotation>0)
 					{
 						rRotation = 0;
@@ -75,13 +75,25 @@ public class ReceiveServer {
 					}
 					
 					//Register system time when data are processed
-					rTime = System.nanoTime()*Math.pow(10,-9);
+					if(rLocation == Position.ENTREE.getID())
+						rTime = System.nanoTime()*Math.pow(10,-9);
+					
 					System.out.println("__________________________________");
-					System.out.println("New data : ID : " + rId + " Location : " + rLocation + " Speed : " + rSpeed + " Rotation : " + labelRotation);
+					System.out.println("New data : ID : " + rId + " Location : " + rLocation + " Speed : " + rSpeed + " Rotation : " + labelRotation/* + " Value : " + rRotation*/);
+					
+//					if(rLocation==0)
+//					{
+//						System.out.println("__________________________________");
+//						System.out.println("Robot " + rId + " entered " + labelRotation);
+//					}else if(rLocation ==3)
+//					{
+//						System.out.println("__________________________________");
+//						System.out.println("Robot " + rId + " left");
+//					}
 					
 					updateRequestSequence();
 				}else {
-					//System.out.println("Passage sequence sent : " + Data);
+					System.out.println("Passage sequence sent : " + Data);
 				}
 			} catch (NumberFormatException e) {
 				//System.out.println("Invalid data : \n" + Data);
@@ -133,13 +145,15 @@ public class ReceiveServer {
 		
 		if(/*requestSequence.size()*/ nbActualRS == 1 && passageSequence.isEmpty())
 		{
-			if(requestSequence.get(0).getLocation()!=3)
-			{
-				System.out.println("Passage Sequence is empty and there is only one robot on request sequence");
-				System.out.println("Robot " + requestSequence.get(0).getId() + " added to passage sequence\n");
-				passageSequence.add(requestSequence.get(0));
-			}else {
-				System.out.println("Robot " + requestSequence.get(0).getId() + " leaved the intersection\n");
+			for (RobotData rS : requestSequence) {
+				if(rS.getLocation() != Position.SORTIE.getID())
+				{
+					//System.out.println("Passage Sequence is empty and there is only one robot on request sequence");
+					System.out.println("Robot " + rS.getId() + " added to passage sequence\n");
+					passageSequence.add(rS);
+				}else {
+					//System.out.println("Robot " + rS.getId() + " leaved the intersection\n");
+				}
 			}
 		}else {
 			/*ArrayList<RobotData> requestSequenceCopy = requestSequence;
@@ -152,7 +166,7 @@ public class ReceiveServer {
 							//If a robot with the same ID is found on the passage sequence
 							if(rS.equals(pS))
 							{
-								System.out.println("Robot " + rS.getId()  +" found in passage list\n");
+								//System.out.println("Robot " + rS.getId()  +" found in passage list\n");
 								//If the robot is leaving the intersection, remove from passage sequence and requestSequence
 								if(rS.getLocation() == Position.SORTIE.getID())
 		 						{
@@ -185,7 +199,7 @@ public class ReceiveServer {
 				
 				if(!found)
 				{				
-					System.out.println("Robot " + requestSequence.get(rSIndex).getId() + " not found in passage list\n");
+					//System.out.println("Robot " + requestSequence.get(rSIndex).getId() + " not found in passage list\n");
 					/*if(rS.getLocation() == Position.SORTIE.getID()) {
 						//requestSequence.remove(rSIndex);
 						//rSIndex--;
