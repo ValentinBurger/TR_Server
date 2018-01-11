@@ -11,6 +11,7 @@ import network.ReceiveServer;
 public class Server {
 
 	/**
+	 * Main function of the project
 	 * @param args
 	 * @throws IOException 
 	 */

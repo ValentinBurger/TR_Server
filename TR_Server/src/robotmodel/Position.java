@@ -6,6 +6,9 @@ package robotmodel;
  *
  */
 
+/**
+ * Enum of position in the scheduler
+ */
 public enum Position 
 {
 	ENTREE		(0),
@@ -15,11 +18,19 @@ public enum Position
 	
 	private final int ID;
 	
+	/**
+	 * Default constructor
+	 * @param pID
+	 */
 	Position(int pID) 
 	{
 		this.ID = pID;
 	}
 	
+	/**
+	 * get enum ID
+	 * @return
+	 */
 	public int getID() { return this.ID; }
 	
 }

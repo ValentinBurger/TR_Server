@@ -13,8 +13,6 @@ import robotmodel.RobotData;
  *
  */
 
-// For test purposes : echo -e "0\n0\n330\n0" | nc -u -w1 localhost 8888
-
 public class ReceiveServer {
 	
 	static int rId, rLocation, rSpeed, rRotation = 0;
@@ -24,11 +22,21 @@ public class ReceiveServer {
 	static ArrayList<RobotData> requestSequence = new ArrayList<RobotData>();
 	static ArrayList<RobotData> passageSequence = new ArrayList<RobotData>();
 	
+	/**
+	 * Loop for server
+	 * @throws IOException
+	 */
 	public void mainServer() throws IOException
 	{
 		while(true);
 	}
 	
+	/**
+	 * Data processing to retrieve data received from robots
+	 * @param Data
+	 * @throws SocketException
+	 * @throws IOException
+	 */
 	public void processData(String Data) throws SocketException, IOException
 	{
 		String delim = "\n";
@@ -43,28 +51,19 @@ public class ReceiveServer {
 			try {
 				if(Integer.parseInt(values[0]) != -1)
 				{
-					//System.out.println("Message : " + values[0] + "/" + values[1] + "/" + values[2]+ "/" + values[3]);
 					try {
 						rId = Integer.parseInt(values[0]);
-					} catch (NumberFormatException e) {
-						//System.out.println("Invalid data 0\n");
-					}
+					} catch (NumberFormatException e) {}
 					try {
 						rLocation = Integer.parseInt(values[1]);
-					} catch (NumberFormatException e) {
-						//System.out.println("Invalid data 1\n");
-					}
+					} catch (NumberFormatException e) {}
 					try {
 						rSpeed = Integer.parseInt(values[2]);
-					} catch (NumberFormatException e) {
-						//System.out.println("Invalid data 2\n");
-					}
+					} catch (NumberFormatException e) {}
 					try {
 						rRotation = Integer.parseInt(values[3]);
-					} catch (NumberFormatException e) {
-						//System.out.println("Invalid data 3\n");
-					}
-					//int oldRotation = rRotation;
+					} catch (NumberFormatException e) {}
+
 					if(rRotation>0)
 					{
 						rRotation = 0;
@@ -79,28 +78,21 @@ public class ReceiveServer {
 						rTime = System.nanoTime()*Math.pow(10,-9);
 					
 					System.out.println("__________________________________");
-					System.out.println("New data : ID : " + rId + " Location : " + rLocation + " Speed : " + rSpeed + " Rotation : " + labelRotation/* + " Value : " + rRotation*/);
-					
-//					if(rLocation==0)
-//					{
-//						System.out.println("__________________________________");
-//						System.out.println("Robot " + rId + " entered " + labelRotation);
-//					}else if(rLocation ==3)
-//					{
-//						System.out.println("__________________________________");
-//						System.out.println("Robot " + rId + " left");
-//					}
+					System.out.println("New data : ID : " + rId + " Location : " + rLocation + " Speed : " + rSpeed + " Rotation : " + labelRotation);
 					
 					updateRequestSequence();
 				}else {
 					System.out.println("Passage sequence sent : " + Data);
 				}
-			} catch (NumberFormatException e) {
-				//System.out.println("Invalid data : \n" + Data);
-			}
+			} catch (NumberFormatException e) {}
 		}
 	}
 	
+	/**
+	 * Creation and update of the request sequence depending on the data received previously
+	 * @throws SocketException
+	 * @throws IOException
+	 */
 	private static void updateRequestSequence() throws SocketException, IOException
 	{			
 		boolean found = false;
@@ -131,9 +123,14 @@ public class ReceiveServer {
 		updatePassageSequence();
 	}
 	
+	/**
+	 * Creation and update of the passage sequence, based on the request sequence and the Batch politic
+	 * @throws SocketException
+	 * @throws IOException
+	 */
 	private static void updatePassageSequence() throws SocketException, IOException
 	{
-		int rSIndex = 0,pSIndex = 0, /*rSIndexToRemove = 0,*/pSIndexToRemove = 0, nbActualRS = 0;
+		int rSIndex = 0,pSIndex = 0, pSIndexToRemove = 0, nbActualRS = 0;
 		boolean found = false, remove = false;
 		
 		for (RobotData rS : requestSequence) {
@@ -143,42 +140,31 @@ public class ReceiveServer {
 			}
 		}
 		
-		if(/*requestSequence.size()*/ nbActualRS == 1 && passageSequence.isEmpty())
+		if(nbActualRS == 1 && passageSequence.isEmpty())
 		{
 			for (RobotData rS : requestSequence) {
 				if(rS.getLocation() != Position.SORTIE.getID())
 				{
-					//System.out.println("Passage Sequence is empty and there is only one robot on request sequence");
 					System.out.println("Robot " + rS.getId() + " added to passage sequence\n");
 					passageSequence.add(rS);
-				}else {
-					//System.out.println("Robot " + rS.getId() + " leaved the intersection\n");
 				}
 			}
-		}else {
-			/*ArrayList<RobotData> requestSequenceCopy = requestSequence;
-			ArrayList<RobotData> passageSequenceCopy = passageSequence;*/
-			
-			for (RobotData rS : requestSequence/*Copy*/) {
-				if(!passageSequence/*Copy*/.isEmpty()) {
+		}else {	
+			for (RobotData rS : requestSequence) {
+				if(!passageSequence.isEmpty()) {
 					searchLoop:
-						for (RobotData pS : passageSequence/*Copy*/) {
+						for (RobotData pS : passageSequence) {
 							//If a robot with the same ID is found on the passage sequence
 							if(rS.equals(pS))
 							{
-								//System.out.println("Robot " + rS.getId()  +" found in passage list\n");
 								//If the robot is leaving the intersection, remove from passage sequence and requestSequence
 								if(rS.getLocation() == Position.SORTIE.getID())
 		 						{
-									System.out.println("Robot " + rS.getId()  + " leaved intersection : removed from passage and sequence list\n");
-									//passageSequence.remove(pSIndex);
-									//requestSequence.remove(rSIndex);
-									//rSIndexToRemove =  rSIndex;
+									System.out.println("Robot " + rS.getId()  + " leaved intersection : removed from passage list\n");
 									pSIndexToRemove =  pSIndex;
-									//rSIndex--;
 									remove = true;
 		 						}else {
-		 						// If new data from robot already in passageSequence -> Update
+		 							// If new data from robot already in passageSequence -> Update
 		 							System.out.println("Robot " + rS.getId()  + " data updated from passage list\n");
 		 							passageSequence.get(pSIndex).setLocation(rS.getLocation());
 									passageSequence.get(pSIndex).setSpeed(rS.getSpeed());
@@ -198,12 +184,7 @@ public class ReceiveServer {
 				pSIndex = 0;
 				
 				if(!found)
-				{				
-					//System.out.println("Robot " + requestSequence.get(rSIndex).getId() + " not found in passage list\n");
-					/*if(rS.getLocation() == Position.SORTIE.getID()) {
-						//requestSequence.remove(rSIndex);
-						//rSIndex--;
-					}else {*/
+				{
 					if(!passageSequence.isEmpty())
 					{
 						if(rS.getLocation() != Position.SORTIE.getID()) {
@@ -232,8 +213,13 @@ public class ReceiveServer {
 		sendPassageSequence();
 	}
 	
+	/**
+	 * Send the passage sequence previously created to all the robots
+	 * @throws SocketException
+	 * @throws IOException
+	 */
 	private static void sendPassageSequence() throws SocketException, IOException
-	{
+	{		
 		if(passageSequence.isEmpty()) {
 			System.out.println("There is nothing to send\n");
 		}else {

@@ -12,6 +12,10 @@ public class Listener implements BroadcastListener {
 
 	private ReceiveServer myServerListener;
 	
+	/**
+	 * Constructor of the server listener
+	 * @param myServer
+	 */
 	public Listener(ReceiveServer myServer)	{
 		this.myServerListener = myServer;
 	}
@@ -21,6 +25,5 @@ public class Listener implements BroadcastListener {
 		String data = new String(message);
 		
 		myServerListener.processData(data);
-		
 	}
 }
